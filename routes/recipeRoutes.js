@@ -6,7 +6,8 @@ const {
     getRecipesByEmail,
     likeRecipe,
     addComment,
-    deleteRecipe
+    deleteRecipe,
+    editComment,
 } = require('../controllers/recipeController');
 const { protect } = require('../middleware/authMiddleware');
 
@@ -23,7 +24,10 @@ router.get('/byemail/:email', protect, getRecipesByEmail);
 
 router.post('/:id/like', protect, likeRecipe);
 
-router.post('/:id/comment', protect, addComment);
+router.post('/:id/comment/', protect, addComment);
+
+router.put('/:recipeId/comment/:commentId', protect, editComment);
+// router.delete('/:recipeId/comment/::commentId', protect, deleteComment);
 
 router.delete('/:id', protect, deleteRecipe);
 

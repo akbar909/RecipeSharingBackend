@@ -12,7 +12,7 @@ const app = express();
 
 app.use(cors({
   origin: ['https://recipe-sharing-frontend.vercel.app'],
-  methods: ['GET', 'POST','DELETE'],
+  methods: ['GET', 'POST', 'PUT','DELETE'],
   credentials: true
 }))
 app.use(express.json());

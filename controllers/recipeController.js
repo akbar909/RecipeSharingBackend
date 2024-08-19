@@ -35,7 +35,9 @@ const getAllRecipes = async (req, res) => {
 const getRecipeById = async (req, res) => {
     try {
         const recipeId = req.params.id;
-        const recipe = await Recipe.findById(recipeId).populate('user', 'name email');
+        const recipe = await Recipe.findById(recipeId)
+            .populate('user', 'name image')
+            .populate('comments.user', 'name image');
 
         if (!recipe) {
             return res.status(404).json({ message: 'Recipe not found' });
@@ -46,6 +48,7 @@ const getRecipeById = async (req, res) => {
         res.status(500).json({ message: 'Server error' });
     }
 };
+
 
 const getRecipesByEmail = async (req, res) => {
     try {
@@ -72,30 +75,27 @@ const likeRecipe = async (req, res) => {
             return res.status(404).json({ message: 'Recipe not found' });
         }
 
-        const userEmail = req.user.email; // Ensure you use email instead of user ID
+        const userEmail = req.user.email;
 
-        // Check if the user has already liked the recipe
-        const likeIndex = recipe.likes.findIndex(like => like.userEmail === userEmail);
+        const liked = recipe.likes.some(like => like.userEmail === userEmail);
 
-        if (likeIndex > -1) {
-            // User already liked the recipe, remove the like
-            recipe.likes.splice(likeIndex, 1);
+        if (liked) {
+            recipe.likes = recipe.likes.filter(like => like.userEmail !== userEmail);
         } else {
-            // User has not liked the recipe, add the like
-            recipe.likes.push({ userEmail: req.user.email });
+            recipe.likes.push({ userEmail });
         }
 
         await recipe.save();
 
-        res.status(200).json(recipe);
+        const updatedRecipe = await Recipe.findById(req.params.id)
+            .populate('user', 'name image')
+            .populate('comments.user', 'name image');
+
+        res.json(updatedRecipe);
     } catch (error) {
-        console.error('Error in likeRecipe:', error);
         res.status(500).json({ message: 'Server error' });
     }
 };
-
-
-
 
 const addComment = async (req, res) => {
     try {
@@ -106,19 +106,102 @@ const addComment = async (req, res) => {
         }
 
         const newComment = {
-            user: req.user._id,
+            user: req.user.id, // assuming req.user.id contains the ID of the logged-in user
             text: req.body.text,
-            date: new Date(),
         };
 
         recipe.comments.push(newComment);
         await recipe.save();
 
-        res.status(200).json(recipe);
+        const updatedRecipe = await Recipe.findById(req.params.id)
+            .populate('user', 'name image')
+            .populate('comments.user', 'name image');
+
+        res.json(updatedRecipe);
     } catch (error) {
         res.status(500).json({ message: 'Server error' });
     }
 };
+
+
+const editComment = async (req, res) => {
+    try {
+        const recipe = await Recipe.findById(req.params.recipeId);
+
+        if (!recipe) {
+            return res.status(404).json({ message: 'Recipe not found' });
+        }
+
+        const comment = recipe.comments.id(req.params.commentId);
+
+        if (!comment) {
+            return res.status(404).json({ message: 'Comment not found' });
+        }
+
+        // Check if the logged-in user is the owner of the comment
+        if (comment.user.toString() !== req.user.id.toString()) {
+            return res.status(403).json({ message: 'Not authorized to edit this comment' });
+        }
+
+        // Update the comment text
+        comment.text = req.body.text;
+        await recipe.save();
+
+        const updatedRecipe = await Recipe.findById(req.params.recipeId)
+            .populate('user', 'name image')
+            .populate('comments.user', 'name image');
+
+        res.json(updatedRecipe);
+    } catch (error) {
+        res.status(500).json({ message: 'Server error' });
+    }
+};
+
+// const deleteComment = async (req, res) => {
+//     try {
+//         // Log the incoming request parameters
+//         console.log(`Deleting comment ${req.params.commentId} from recipe ${req.params.recipeId}`);
+
+//         // Find the recipe by ID
+//         const recipe = await Recipe.findById(req.params.recipeId);
+
+//         if (!recipe) {
+//             return res.status(404).json({ message: 'Recipe not found' });
+//         }
+
+//         // Find the comment by ID within the recipe's comments
+//         const comment = recipe.comments.id(req.params.commentId);
+
+//         if (!comment) {
+//             return res.status(404).json({ message: 'Comment not found' });
+//         }
+
+//         // Check if the logged-in user is the owner of the comment or the recipe
+//         if (comment.user.toString() !== req.user.id.toString() && recipe.user.toString() !== req.user.id.toString()) {
+//             return res.status(403).json({ message: 'Not authorized to delete this comment' });
+//         }
+
+//         // Remove the comment
+//         comment.remove();
+
+//         // Save the updated recipe
+//         await recipe.save();
+
+//         // Fetch and return the updated recipe with populated fields
+//         const updatedRecipe = await Recipe.findById(req.params.recipeId)
+//             .populate('user', 'name image')
+//             .populate('comments.user', 'name image');
+
+//         res.json(updatedRecipe);
+//     } catch (error) {
+//         // Log the error details
+//         console.error('Error deleting comment:', error);
+//         res.status(500).json({ message: 'Server error' });
+//     }
+// };
+
+
+
 
 
 const deleteRecipe = async (req, res) => {
@@ -151,5 +234,6 @@ module.exports = {
     getRecipesByEmail,
     likeRecipe,
     addComment,
-    deleteRecipe
+    deleteRecipe,
+    editComment,
 };
