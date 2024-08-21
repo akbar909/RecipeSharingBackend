@@ -8,6 +8,7 @@ const {
     addComment,
     deleteRecipe,
     editComment,
+    getRecipesByUserName
 } = require('../controllers/recipeController');
 const { protect } = require('../middleware/authMiddleware');
 
@@ -21,13 +22,14 @@ router.get('/', protect, getAllRecipes);
 router.get('/:id', protect, getRecipeById);
 
 router.get('/byemail/:email', protect, getRecipesByEmail);
+router.get('/user/:userName', protect, getRecipesByUserName);
 
 router.post('/:id/like', protect, likeRecipe);
 
 router.post('/:id/comment/', protect, addComment);
 
 router.put('/:recipeId/comment/:commentId', protect, editComment);
-// router.delete('/:recipeId/comment/::commentId', protect, deleteComment);
+
 
 router.delete('/:id', protect, deleteRecipe);
 

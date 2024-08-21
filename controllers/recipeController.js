@@ -25,7 +25,7 @@ const createRecipe = async (req, res) => {
 
 const getAllRecipes = async (req, res) => {
     try {
-        const recipes = await Recipe.find().populate('user', 'name email');
+        const recipes = await Recipe.find().populate('user', 'name image email');
         res.json(recipes);
     } catch (error) {
         res.status(500).json({ message: 'Server error' });
@@ -59,13 +59,30 @@ const getRecipesByEmail = async (req, res) => {
             return res.status(404).json({ message: 'User not found' });
         }
 
-        const recipes = await Recipe.find({ user: user._id }).populate('user', 'name email');
+        const recipes = await Recipe.find({ user: user._id }).populate('user', 'name image email');
         res.json(recipes);
     } catch (error) {
         res.status(500).json({ message: 'Server error' });
     }
 };
 
+const getRecipesByUserName = async (req, res) => {
+    try {
+        const userName = decodeURIComponent(req.params.userName);
+        // console.log('Received userName:', userName); // For debugging
+
+        const user = await User.findOne({ name: userName });
+
+        if (!user) {
+            return res.status(404).json({ message: 'User not found' });
+        }
+
+        const recipes = await Recipe.find({ user: user._id }).populate('user', 'name image');
+        res.json(recipes);
+    } catch (error) {
+        res.status(500).json({ message: 'Server error' });
+    }
+};
 
 const likeRecipe = async (req, res) => {
     try {
@@ -236,4 +253,5 @@ module.exports = {
     addComment,
     deleteRecipe,
     editComment,
+    getRecipesByUserName
 };
