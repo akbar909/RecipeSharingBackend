@@ -1,4 +1,6 @@
 const express = require('express');
+const { urlencoded } = express;
+const cookieParser = require('cookie-parser');
 const dotenv = require('dotenv');
 const cors = require('cors');
 const connectDB = require('./config/db');
@@ -9,13 +11,15 @@ dotenv.config();
 connectDB();
 
 const app = express();
+app.use(cookieParser());
+app.use(urlencoded({ limit: '20mb', extended: true }));
 
 app.use(cors({
   origin: ['https://recipe-sharing-frontend.vercel.app'],
   methods: ['GET', 'POST', 'PUT','DELETE'],
   credentials: true
 }))
-app.use(express.json());
+app.use(express.json({ limit: '20mb' }));
 
 app.get('/', (req, res) => {
   res.send('Hello World');

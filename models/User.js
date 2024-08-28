@@ -7,15 +7,21 @@ const userSchema = mongoose.Schema(
             type: String,
             required: true,
         },
+        userName: {
+            type: String,
+            required: true,
+            unique: true,
+        },
         image: {
             type: String,
+            default: '',
             required: false,
         },
         email: {
             type: String,
             required: true,
             unique: true,
-            match: [/.+@.+\..+/, 'Please enter a valid email address'] // Basic email format validation
+            match: [/.+@.+\..+/, 'Please enter a valid email address'], // Basic email format validation
         },
         password: {
             type: String,
@@ -23,7 +29,7 @@ const userSchema = mongoose.Schema(
         },
     },
     {
-        timestamps: true
+        timestamps: true,
     }
 );
 

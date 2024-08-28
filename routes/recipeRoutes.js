@@ -22,6 +22,7 @@ router.get('/', protect, getAllRecipes);
 router.get('/:id', protect, getRecipeById);
 
 router.get('/byemail/:email', protect, getRecipesByEmail);
+
 router.get('/user/:userName', protect, getRecipesByUserName);
 
 router.post('/:id/like', protect, likeRecipe);
