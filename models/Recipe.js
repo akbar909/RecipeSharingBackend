@@ -26,7 +26,9 @@ const RecipeSchema = new mongoose.Schema({
         type: String,
         // required: false,
     },
-    likes: [{userEmail: String}],
+    // likes: [{userEmail: String}],
+    likes:[{type:mongoose.Schema.Types.ObjectId, ref:'User'}],
+
     comments: [
         {
             user: {

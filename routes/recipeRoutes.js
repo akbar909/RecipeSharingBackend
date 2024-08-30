@@ -8,7 +8,8 @@ const {
     addComment,
     deleteRecipe,
     editComment,
-    getRecipesByUserName
+    getRecipesByUserName,
+    deleteComment,
 } = require('../controllers/recipeController');
 const { protect } = require('../middleware/authMiddleware');
 
@@ -31,6 +32,7 @@ router.post('/:id/comment/', protect, addComment);
 
 router.put('/:recipeId/comment/:commentId', protect, editComment);
 
+router.delete('/:id/comment/:commentId', protect, deleteComment);
 
 router.delete('/:id', protect, deleteRecipe);
 
